@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Focus Pomodoro",
+  "version": "1.0",
+  "permissions": [
+    "storage", 
+    "alarms", 
+    "declarativeNetRequest", 
+    "declarativeNetRequestFeedback",
+    "notifications" 
+  ],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+  "service_worker": "background.js"},
+  "web_accessible_resources": [
+    {
+      "resources": ["blocked.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
