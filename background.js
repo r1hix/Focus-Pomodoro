@@ -32,23 +32,21 @@ async function stopBlocking() {
     await chrome.declarativeNetRequest.updateDynamicRules({
         removeRuleIds: currentRuleIds
     });
-    
-    console.log("Session over. All sites accessible.");
 }
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sendResponse) => {
     if (message.action === "startFocus") {
-        console.log("Starting focus mode...");
-        
         startBlocking(message.sites);
-        sendResponse({ status: "Focus started successfully" });
+        sendResponse({ status: "Focus started successfully" }); //
+    } else if (message.action === "stopFocus") {
+        stopBlocking();
+        sendResponse({ status: "Focus stopped successfully" });
     }
-    return true; 
+    return true;
 });
 
 chrome.alarms.onAlarm.addListener((alarm) => {
     if (alarm.name === "pomodoroTimer") {
         stopBlocking();
-        console.log("ALARM FINISHED");
     }
 });

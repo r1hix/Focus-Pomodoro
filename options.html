@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Focus Flow Settings</title>
+    <style>
+        body { font-family: sans-serif; background: #1e1e1e; color: white; padding: 20px; }
+        input { padding: 5px; }
+        button { margin-left: 5px; }
+        ul { list-style: none; padding: 0; }
+        li { background: #333; padding: 10px; margin-top: 5px; display: flex; justify-content: space-between; align-items: center; }
+    </style>
+</head>
+
+<body>
+    <h1>Settings</h1>
+    <h3>Blocked Websites</h3>
+    <input type="text" id="siteInput" placeholder="e.g., instagram.com">
+    <button id="addSiteBtn">Add</button>
+
+    <ul id="siteList"></ul>
+    <br>
+    <button id="saveBtn">Save Block List</button>
+
+    <script src="options.js"></script>
+</body>
+</html>
