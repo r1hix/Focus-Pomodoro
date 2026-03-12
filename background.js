@@ -9,7 +9,7 @@ async function startBlocking(sites) {
             redirect: { url: redirectUrl } 
         },
         condition: { 
-            urlFilter: `||${site}`, 
+            urlFilter: `||${site}^`, 
             resourceTypes: ['main_frame'] 
         }
     }));
@@ -34,13 +34,15 @@ async function stopBlocking() {
     });
 }
 
-chrome.runtime.onMessage.addListener((message, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "startFocus") {
-        startBlocking(message.sites);
-        sendResponse({ status: "Focus started successfully" }); //
+        startBlocking(message.sites).then(() => {
+            sendResponse({ status: "Focus started successfully" });
+        });
     } else if (message.action === "stopFocus") {
-        stopBlocking();
-        sendResponse({ status: "Focus stopped successfully" });
+        stopBlocking().then(() => {
+            sendResponse({ status: "Focus stopped successfully" });
+        });
     }
     return true;
 });

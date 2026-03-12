@@ -6,3 +6,5 @@
 *.log
 dist/
 build/
+popup3.js
+popup3.html

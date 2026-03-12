@@ -3,18 +3,22 @@
     
     <head>
         <style>
-            body { width: 200px; padding: 15px; background: #1e1e1e; color: white; text-align: center; }
-            button { background: #ff4b2b; color: white; border: none; padding: 10px; cursor: pointer; border-radius: 5px; width: 100%; margin-top: 10px; }
-            #timerDisplay { font-size: 2.5rem; color: #ff5e57; font-family: monospace; }
+            body { width: 200px; padding: 15px; background: #1e1e1e; color: white; text-align: center; font-family: Arial, Helvetica, sans-serif; }
+            #optionsBtn { background: none; color: #7aa2f7; border: 2px solid rgb(0, 0, 0); padding: 5px; cursor: pointer; border-radius: 50%; font-size: large; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; margin-left: 8px; }
+            #startBtn { background: #000000; color: white; border: 1px solid white; padding: 10px; cursor: pointer; border-radius: 20px; width: 100%; margin-top: 10px; }
+            #timerDisplay { font-size: 2.5rem; color: #048451; font-family: monospace; }
+            .header { display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+            h3 { margin: 0; }
         </style>
     </head>
 
     <body>
-        <h3>Focus Flow</h3>
+        <div class="header">
+            <h3>Focus Pomodoro</h3>
+            <button id="optionsBtn">&#9881;</button>
+        </div>
         <h2 id="timerDisplay">25:00</h2>
         <button id="startBtn">Start Session</button>
-        <button id="resetBtn">Reset</button>
-        <button id="optionsBtn">Options</button>
 
         <script src="popup.js"></script>
     </body>

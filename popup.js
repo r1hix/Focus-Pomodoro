@@ -1,7 +1,7 @@
 const timerDisplay = document.getElementById('timerDisplay');
 const startBtn = document.getElementById('startBtn');
-const resetBtn = document.getElementById('resetBtn');
 const optionsBtn = document.getElementById('optionsBtn');
+let isStarted = false;
 
 optionsBtn.addEventListener('click', () => {
     window.open('options.html');
@@ -17,14 +17,12 @@ function updateTimerUI()  {
                 const minutes = Math.floor(remainingTime / 60000);          // Convert milliseconds to minutes
                 const seconds = Math.floor((remainingTime % 60000) / 1000); // Convert remaining milliseconds to seconds
                 timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                startBtn.textContent = "Focusing...";
-                startBtn.disabled = true;
-                resetBtn.disabled = false;
+                startBtn.textContent = "Reset";
+                isStarted = true;
             } else {
                 timerDisplay.textContent = "25:00"; // Reset timer display
                 startBtn.textContent = "Start Session";
-                startBtn.disabled = false;
-                resetBtn.disabled = true;
+                isStarted = false;
                 clearInterval(timerInterval);
             }
         }
@@ -32,36 +30,38 @@ function updateTimerUI()  {
 }
 
 startBtn.addEventListener('click', () => {
-    chrome.storage.local.get(['blockedSites'], (result) => {
-        const sitesToBlock = result.blockedSites || []; // Empty array if none saved
+    if (!isStarted) {
+        chrome.storage.local.get(['blockedSites'], (result) => {
+            const sitesToBlock = result.blockedSites || []; // Empty array if none saved
 
-        if (sitesToBlock.length === 0) {
-            alert("Your block list is empty! Go to options to add sites.");
-            return;
-        }
+            if (sitesToBlock.length === 0) {
+                alert("Your block list is empty! Go to options to add sites.");
+                return;
+            }
 
-        chrome.runtime.sendMessage({ action: "startFocus", sites: sitesToBlock });
+            chrome.runtime.sendMessage({ action: "startFocus", sites: sitesToBlock });
 
-        const endTime = Date.now() + 25 * 60 * 1000;
-        chrome.storage.local.set({ endTime: endTime });
-        chrome.alarms.create("pomodoroTimer", { delayInMinutes: 25 });
-        updateTimerUI();
-        timerInterval = setInterval(updateTimerUI, 1000);
-    });
+            const endTime = Date.now() + 25 * 60 * 1000;
+            chrome.storage.local.set({ endTime: endTime });
+            chrome.alarms.create("pomodoroTimer", { delayInMinutes: 25 });
+            
+            if (timerInterval) clearInterval(timerInterval);
+            
+            updateTimerUI();
+            timerInterval = setInterval(updateTimerUI, 1000);
+        });
+    } else {
+        chrome.runtime.sendMessage({action: "stopFocus"});
+
+        chrome.storage.local.remove('endTime');
+        chrome.alarms.clear('pomodoroTimer');
+
+        timerDisplay.textContent = "25:00";
+        startBtn.textContent = "Start Session";
+        isStarted = false;
+        clearInterval(timerInterval);
+    }
 });
-
-resetBtn.addEventListener('click', () => {
-    chrome.runtime.sendMessage({action: "stopFocus"});
-
-    chrome.storage.local.remove('endTime');
-    chrome.alarms.clear('pomodoroTimer');
-
-    timerDisplay.textContent = "25:00";
-    startBtn.textContent = "Start Session";
-    startBtn.disabled = false;
-    resetBtn.disabled = true;
-    clearInterval(timerInterval);
-})
 
 // Initialize UI on popup open
 updateTimerUI();

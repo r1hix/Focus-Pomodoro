@@ -1,26 +1,31 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Focus Flow Settings</title>
-    <style>
-        body { font-family: sans-serif; background: #1e1e1e; color: white; padding: 20px; }
-        input { padding: 5px; }
-        button { margin-left: 5px; }
-        ul { list-style: none; padding: 0; }
-        li { background: #333; padding: 10px; margin-top: 5px; display: flex; justify-content: space-between; align-items: center; }
-    </style>
-</head>
+    <head>
+        <title>Settings</title>
+        <style>
+            body { font-family: Arial, Helvetica, sans-serif; background: #1e1e1e; color: white; padding: 20px; }
+            input { padding: 10px; border-radius: 14px; border-color: white; width: 30%; }
+            button { background: #000000; color: white; border: 1px solid white; padding: 10px; cursor: pointer; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; margin-left: 8px; margin-top: 10px; }
+            .removeBtn { background: #000000; color: white; border: 1px solid white; padding: 5px 12px; cursor: pointer; border-radius: 16px; margin: 0; font-size: 14px; }
+            ul { list-style: none; padding: 0; font-size: 16px; }
+            li { background: #333; padding: 10px; margin-top: 5px; display: flex; justify-content: space-between; align-items: center; border-radius: 14px; }
+            p { color: rgb(188, 188, 188); a { color: rgb(255, 255, 255); } }
+            .saved-indicator { color: #4fd1c5; margin-left: 10px; font-size: 14px; opacity: 0; transition: opacity 0.3s; }
+            .saved-indicator.show { opacity: 1; }
+        </style>
+    </head>
 
-<body>
-    <h1>Settings</h1>
-    <h3>Blocked Websites</h3>
-    <input type="text" id="siteInput" placeholder="e.g., instagram.com">
-    <button id="addSiteBtn">Add</button>
+    <body>
+        <h1>&#9881;&nbsp;Settings</h1>
+        <p>Focus Pomodoro by&nbsp;<a href="https://www.github.com/r1hix">rihix</a></p>
+        <hr>
+        <h3>Blocked Sites:</h3>
+        <input type="text" id="siteInput" placeholder="e.g., instagram.com">
+        <button id="addSiteBtn">Add</button>
+        <span id="savedIndicator" class="saved-indicator">&#10004; Saved</span>
 
-    <ul id="siteList"></ul>
-    <br>
-    <button id="saveBtn">Save Block List</button>
+        <ul id="siteList"></ul>
 
-    <script src="options.js"></script>
-</body>
+        <script src="options.js"></script>
+    </body>
 </html>
