@@ -50,5 +50,5 @@ A minimalist Chrome extension that combines a Pomodoro timer with website blocki
 
 ## Credits
 Created by [rihix](https://github.com/r1hix) as a productivity tool for developers and students.
-- Version: `1.1.1`
+- Version: `1.1.2`
 - License: `MIT`
