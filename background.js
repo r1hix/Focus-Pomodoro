@@ -50,5 +50,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 chrome.alarms.onAlarm.addListener((alarm) => {
     if (alarm.name === "pomodoroTimer") {
         stopBlocking();
+        chrome.storage.local.remove(['endTime', 'remainingTime', 'isPaused', 'selectedTimer']);
     }
 });

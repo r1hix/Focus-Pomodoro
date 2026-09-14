@@ -2,17 +2,56 @@ const siteList = document.getElementById('siteList');
 const siteInput = document.getElementById('siteInput');
 const addSiteBtn = document.getElementById('addSiteBtn');
 const savedIndicator = document.getElementById('savedIndicator');
+const defaultTimerInput = document.getElementById('defaultTimerInput');
+const saveTimerBtn = document.getElementById('saveTimerBtn');
+const timerSavedIndicator = document.getElementById('timerSavedIndicator');
 let sites = [];
 let saveTimeout;
+let timerSaveTimeout;
 
 document.addEventListener('DOMContentLoaded', () => {
-    chrome.storage.local.get(['blockedSites'], (result) => {
+    chrome.storage.local.get(['blockedSites', 'defaultTimer'], (result) => {
+        if (result.defaultTimer) {
+            defaultTimerInput.value = result.defaultTimer;
+        } else {
+            defaultTimerInput.value = 25;
+        }
+
         if (result.blockedSites) {
             sites = result.blockedSites;
             updateSiteList();
         }
     });
     siteInput.focus();
+});
+
+function saveDefaultTimer() {
+    let val = parseInt(defaultTimerInput.value, 10);
+    if (isNaN(val) || val <= 0) {
+        val = 25;
+    } else {
+        val = Math.max(5, Math.min(180, Math.round(val / 5) * 5));
+    }
+    defaultTimerInput.value = val;
+
+    chrome.storage.local.set({ defaultTimer: val, selectedTimer: val }, () => {
+        if (timerSaveTimeout) clearTimeout(timerSaveTimeout);
+        timerSavedIndicator.classList.add('show');
+        timerSaveTimeout = setTimeout(() => {
+            timerSavedIndicator.classList.remove('show');
+        }, 1500);
+    });
+}
+
+saveTimerBtn.addEventListener('click', saveDefaultTimer);
+
+defaultTimerInput.addEventListener('change', saveDefaultTimer);
+
+defaultTimerInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        saveDefaultTimer();
+    }
 });
 
 function addSite() {

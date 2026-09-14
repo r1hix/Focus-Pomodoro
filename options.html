@@ -12,12 +12,24 @@
             p { color: rgb(188, 188, 188); a { color: rgb(255, 255, 255); } }
             .saved-indicator { color: #4fd1c5; margin-left: 10px; font-size: 14px; opacity: 0; transition: opacity 0.3s; }
             .saved-indicator.show { opacity: 1; }
+            .setting-row { display: flex; align-items: center; margin-bottom: 10px; }
+            .setting-row input { width: 80px; }
+            .setting-row button { margin-top: 0; }
+            .setting-row .unit-label { margin-left: 8px; }
         </style>
     </head>
 
     <body>
         <h1>&#9881;&nbsp;Settings</h1>
         <p>Focus Pomodoro by&nbsp;<a href="https://www.github.com/r1hix">rihix</a></p>
+        <hr>
+        <h3>Default Timer:</h3>
+        <div class="setting-row">
+            <input type="number" id="defaultTimerInput" min="5" max="180" step="5" value="25">
+            <span class="unit-label">minutes</span>
+            <button id="saveTimerBtn">Save</button>
+            <span id="timerSavedIndicator" class="saved-indicator">&#10004; Saved</span>
+        </div>
         <hr>
         <h3>Blocked Sites:</h3>
         <input type="text" id="siteInput" placeholder="e.g., instagram.com">

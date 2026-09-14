@@ -2,73 +2,131 @@ const timerDisplay = document.getElementById('timerDisplay');
 const startBtn = document.getElementById('startBtn');
 const optionsBtn = document.getElementById('optionsBtn');
 const resetBtn = document.getElementById('resetBtn');
+const minusBtn = document.getElementById('minusBtn');
+const plusBtn = document.getElementById('plusBtn');
+
 let isStarted = false;
 let isPaused = false;
+let currentMinutes = 25;
+let timerInterval;
 
 optionsBtn.addEventListener('click', () => {
     window.open('options.html');
 });
 
-let timerInterval;
-
 function formatTime(ms) {
-    const minutes = Math.floor(ms / 60000);
-    const seconds = Math.floor((ms % 60000) / 1000);
+    const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
-function resetTimerState() {
-    timerDisplay.textContent = "25:00";
+function setStoppedUI(minutes) {
+    currentMinutes = minutes;
+    timerDisplay.textContent = formatTime(currentMinutes * 60 * 1000);
     startBtn.textContent = "Start Session";
     resetBtn.style.display = "none";
+    minusBtn.classList.remove('hidden');
+    plusBtn.classList.remove('hidden');
+    minusBtn.disabled = (currentMinutes <= 5);
+    plusBtn.disabled = (currentMinutes >= 180);
     isStarted = false;
     isPaused = false;
-    clearInterval(timerInterval);
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
 }
 
-function updateTimerUI()  {
-    chrome.storage.local.get(['endTime', 'remainingTime', 'isPaused'], (result) => {
+function resetTimerState() {
+    chrome.storage.local.get(['defaultTimer'], (result) => {
+        const defaultMin = result.defaultTimer || 25;
+        setStoppedUI(defaultMin);
+    });
+}
+
+function updateTimerUI() {
+    chrome.storage.local.get(['endTime', 'remainingTime', 'isPaused', 'selectedTimer', 'defaultTimer'], (result) => {
         if (result.isPaused) {
             timerDisplay.textContent = formatTime(result.remainingTime);
             startBtn.textContent = "Resume";
             resetBtn.style.display = "inline-block";
+            minusBtn.classList.add('hidden');
+            plusBtn.classList.add('hidden');
             isStarted = true;
             isPaused = true;
-            clearInterval(timerInterval);
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
         } else if (result.endTime) {
-            const remainingTime = result.endTime - Date.now();  // Calculate remaining time in milliseconds
+            const remainingTime = result.endTime - Date.now();
             if (remainingTime > 0) {
                 timerDisplay.textContent = formatTime(remainingTime);
                 startBtn.textContent = "Pause";
                 resetBtn.style.display = "none";
+                minusBtn.classList.add('hidden');
+                plusBtn.classList.add('hidden');
                 isStarted = true;
                 isPaused = false;
+                if (!timerInterval) {
+                    timerInterval = setInterval(updateTimerUI, 1000);
+                }
             } else {
+                chrome.storage.local.remove(['endTime', 'remainingTime', 'isPaused', 'selectedTimer']);
                 resetTimerState();
             }
         } else {
-            resetTimerState();
+            const initialMinutes = result.selectedTimer || result.defaultTimer || 25;
+            setStoppedUI(initialMinutes);
         }
     });
 }
 
+minusBtn.addEventListener('click', () => {
+    if (isStarted) return;
+    if (currentMinutes > 5) {
+        currentMinutes -= 5;
+        setStoppedUI(currentMinutes);
+        chrome.storage.local.set({ selectedTimer: currentMinutes });
+    }
+});
+
+plusBtn.addEventListener('click', () => {
+    if (isStarted) return;
+    if (currentMinutes < 180) {
+        currentMinutes += 5;
+        setStoppedUI(currentMinutes);
+        chrome.storage.local.set({ selectedTimer: currentMinutes });
+    }
+});
+
 startBtn.addEventListener('click', () => {
     if (!isStarted) {
-        chrome.storage.local.get(['blockedSites'], (result) => {
-            const sitesToBlock = result.blockedSites || []; // Empty array if none saved
+        chrome.storage.local.get(['blockedSites', 'selectedTimer', 'defaultTimer'], (result) => {
+            const sitesToBlock = result.blockedSites || [];
 
             if (sitesToBlock.length === 0) {
                 alert("Your block list is empty! Go to options to add sites.");
                 return;
             }
 
+            const sessionMinutes = result.selectedTimer || result.defaultTimer || currentMinutes || 25;
+            currentMinutes = sessionMinutes;
+
             chrome.runtime.sendMessage({ action: "startFocus", sites: sitesToBlock });
 
-            const endTime = Date.now() + 25 * 60 * 1000;
+            const endTime = Date.now() + sessionMinutes * 60 * 1000;
             chrome.storage.local.set({ endTime: endTime, isPaused: false });
-            chrome.alarms.create("pomodoroTimer", { delayInMinutes: 25 });
-            if (timerInterval) clearInterval(timerInterval);
+            chrome.alarms.create("pomodoroTimer", { delayInMinutes: sessionMinutes });
+
+            minusBtn.classList.add('hidden');
+            plusBtn.classList.add('hidden');
+            isStarted = true;
+            isPaused = false;
+
             updateTimerUI();
+            if (timerInterval) clearInterval(timerInterval);
             timerInterval = setInterval(updateTimerUI, 1000);
         });
     } else if (!isPaused) {
@@ -79,7 +137,10 @@ startBtn.addEventListener('click', () => {
             chrome.storage.local.remove('endTime');
             chrome.alarms.clear('pomodoroTimer');
 
-            clearInterval(timerInterval);
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
             updateTimerUI();
         });
     } else {
@@ -92,7 +153,6 @@ startBtn.addEventListener('click', () => {
             chrome.alarms.create("pomodoroTimer", { delayInMinutes: remainingTime / 60000 });
 
             if (timerInterval) clearInterval(timerInterval);
-
             updateTimerUI();
             timerInterval = setInterval(updateTimerUI, 1000);
         });
@@ -100,14 +160,21 @@ startBtn.addEventListener('click', () => {
 });
 
 resetBtn.addEventListener('click', () => {
-    chrome.runtime.sendMessage({action: "stopFocus"});
+    chrome.runtime.sendMessage({ action: "stopFocus" });
 
-    chrome.storage.local.remove(['endTime', 'remainingTime', 'isPaused']);
+    chrome.storage.local.remove(['endTime', 'remainingTime', 'isPaused', 'selectedTimer']);
     chrome.alarms.clear('pomodoroTimer');
 
     resetTimerState();
 });
 
+chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local') {
+        if (!isStarted && (changes.defaultTimer || changes.selectedTimer)) {
+            updateTimerUI();
+        }
+    }
+});
+
 // Initialize UI on popup open
 updateTimerUI();
-timerInterval = setInterval(updateTimerUI, 1000);
