@@ -56,6 +56,9 @@ A minimalist Chrome extension that combines a Pomodoro timer with website blocki
 
 ## Future Improvements
 - Sound notifications
+- Add a button to block the current site
+- Breaks & study intervals (automatically adds breaks between study sessions)
+- Skip current session button
 
 ## Credits
 Created by [rihix](https://github.com/r1hix) as a productivity tool for developers and students.
